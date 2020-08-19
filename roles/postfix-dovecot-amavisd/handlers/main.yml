@@ -1,0 +1,15 @@
+---
+- name: restart dovecot
+  service:
+    name: dovecot
+    state: restarted
+
+- name: restart postfix
+  service:
+    name: postfix
+    state: restarted
+
+- name: reload nginx
+  service:
+    name: nginx
+    state: reloaded

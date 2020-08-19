@@ -1,0 +1,151 @@
+---
+- name: Create logs directories
+  file:
+    path: "{{ ELK_ROOT_LOCATION }}/logs/{{ item }}"
+    mode: 0755
+    owner: root
+    recurse: true
+    state: directory
+  with_items: "{{ ELK_SERVICES }}"
+
+#- name: Create the network for elasticsearch
+#  docker_network:
+#    name: "{{ ELK_DOCKER_NETWORK }}"
+
+# ------------------------------------ ELASTICSEARCH ------------------------------------
+- name: Get elasticsearch user id
+  shell: /usr/bin/id -u elasticsearch
+  register: elasticsearch_id
+  when: ("elasticsearch" in ELK_SERVICES)
+
+- name: Printing
+  debug:
+    msg: "User id {{ elasticsearch_id.stdout }}"
+  when: ("elasticsearch" in ELK_SERVICES)
+
+- name: Create the elasticsearch container
+  docker_container:
+    recreate: true
+    state: started
+    name: "{{ ELK_ELASTICSEARCH_SERVICE_NAME }}"
+    hostname: "{{ ELK_ELASTICSEARCH_SERVICE_NAME }}"
+    image: "docker.elastic.co/elasticsearch/elasticsearch:{{ ELK_VERSION }}"
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - "{{ ELK_ROOT_LOCATION }}/configs/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro"
+      - /var/data/elasticsearch:/usr/share/elasticsearch/data
+      - /backup:/backup
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+    env:
+      ES_JAVA_OPTS: "-Xmx1g -Xms1g"
+      ELASTIC_PASSWORD: "{{ ELK_ELASTISEARCH_PASSWORD }}"
+    ulimits:
+      - "memlock:-1:-1"
+      - "nofile:65536:65536"
+    #purge_networks: true
+    network_mode: "host"
+    #networks:
+    #  - name: "{{ ELK_DOCKER_NETWORK }}"
+    user: "{{ elasticsearch_id.stdout }}"
+  notify: restart elasticsearch
+  when: ("elasticsearch" in ELK_SERVICES)
+  changed_when: false
+
+
+# --------------------------------------- LOGSTASH ---------------------------------------
+- name: Get logstash  user id
+  shell: /usr/bin/id -u logstash
+  register: logstash_id
+  when: ("logstash" in ELK_SERVICES)
+
+- name: Printing
+  debug:
+    msg: "User id {{ logstash_id.stdout }}"
+  when: ("logstash" in ELK_SERVICES)
+
+- name: Generate port list for Logstash Inputs.
+  include: ports.yml
+  vars:
+    to_listen: "{{ item }}"
+  with_items: "{{ ELK_LOGSTASH_INPUTS }}"
+
+- name: Create the logstash container.
+  docker_container:
+    recreate: true
+    name: "{{ ELK_LOGSTASH_SERVICE_NAME }}"
+    hostname: "{{ ELK_LOGSTASH_SERVICE_NAME }}"
+    image: "docker.elastic.co/logstash/logstash:{{ ELK_VERSION }}"
+    ports: "{{ ELK_LOGSTASH_PORTS }}"
+    volumes:
+      - "{{ ELK_ROOT_LOCATION }}/configs/logstash.yml:/usr/share/logstash/config/logstash.yml:ro"
+      - "{{ ELK_ROOT_LOCATION }}/logstash_patterns:{{ ELK_LOGSTASH_DOCKER_PATTERNS_DIR }}:ro"
+      - "{{ ELK_ROOT_LOCATION }}/logstash_pipelines:/usr/share/logstash/pipeline:ro"
+      - /var/data/logstash:/usr/share/logstash/data
+      - "{{ ELK_ROOT_LOCATION }}/ssl/logstash.crt:/usr/share/logstash/config/logstash.crt:ro"
+      - "{{ ELK_ROOT_LOCATION }}/ssl/logstash.key:/usr/share/logstash/config/logstash.key:ro"
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+    env:
+      ES_JAVA_OPTS: "-Xmx1g -Xms1g"
+    ulimits:
+      - "memlock:-1:-1"
+      - "nofile:65536:65536"
+    #purge_networks: true
+    network_mode: "host"
+    #networks:
+    #  - name: "{{ ELK_DOCKER_NETWORK }}"
+    user: "{{ logstash_id.stdout }}"
+  when: ("logstash" in ELK_SERVICES)
+  tags: logserver
+  changed_when: false
+
+# ---------------------------------------- KIBANA ----------------------------------------
+- name: Create the kibana container.
+  docker_container:
+    recreate: true
+    state: started
+    restart_policy: unless-stopped
+    name: "{{ ELK_KIBANA_SERVICE_NAME }}"
+    hostname: "{{ ELK_KIBANA_SERVICE_NAME }}"
+    image: "docker.elastic.co/kibana/kibana:{{ ELK_VERSION }}"
+    ports:
+      - "5601:5601"
+    volumes:
+      - "{{ ELK_ROOT_LOCATION }}/configs/kibana.yml:/usr/share/kibana/config/kibana.yml:ro"
+    env:
+      ES_JAVA_OPTS: "-Xmx512m -Xms512m"
+    ulimits:
+      - "memlock:-1:-1"
+      - "nofile:65536:65536"
+    network_mode: host
+#    purge_networks: true
+#    networks:
+#      - name: "host"
+  notify: restart kibana
+  when: ("kibana" in ELK_SERVICES)
+  tags: logserver
+  changed_when: false
+
+# --------------------------------------- Filebeat ---------------------------------------
+- name: start filebeat
+  docker_container:
+    recreate: true
+    name: filebeat
+    hostname: filebeat
+    image: docker.elastic.co/beats/filebeat:7.6.2
+    user: root
+    volumes:
+      - "{{ ELK_ROOT_LOCATION }}/configs/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro"
+      - /var/lib/docker:/var/lib/docker:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+    state: started
+    restart_policy: unless-stopped
+    network_mode: "host"
+  changed_when: false
+  tags: logserver
+

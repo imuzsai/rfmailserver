@@ -1,0 +1,32 @@
+# tasks file for logwatch
+---
+- name: install
+  apt:
+    name: "logwatch"
+    state: "{{ apt_install_state | default('latest') }}"
+    update_cache: true
+    cache_valid_time: "{{ apt_update_cache_valid_time | default(3600) }}"
+  tags:
+    - logwatch install
+
+
+- name: copy logwatch configuration
+  copy:
+    src: etc/logwatch.conf
+    dest: /usr/share/logwatch/default.conf/logwatch.conf
+    owner: root
+    group: root
+    mode: 0644
+  tags:
+    - logwatch configuration
+
+- name: create cronjob file in cron.daily
+  copy:
+    src: etc/cron.daily/00logwatch
+    dest: /etc/cron.daily/00logwatch
+    owner: root
+    group: root
+    mode: 0755
+  tags:
+    - logwatch cronjob
+

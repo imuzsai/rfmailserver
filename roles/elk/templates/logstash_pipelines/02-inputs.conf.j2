@@ -1,0 +1,8 @@
+# {{ ansible_managed }}
+input {
+  udp {
+    type => "rsyslog"
+    port => 10514
+    codec => json
+  }
+}

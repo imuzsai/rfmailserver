@@ -1,0 +1,38 @@
+---
+- name: Fails when os is not Debian or Ubuntu 14+
+  fail:
+    msg: 'This ansible role supports Debian and Ubuntu 14+ only'
+  when: (ansible_distribution not in ['Debian', 'Ubuntu']) or (ansible_distribution == 'Ubuntu' and ansible_distribution_version|int < 14)
+
+- name: Include debian variables
+  include_vars: debian.yml
+  when: ansible_distribution == 'Debian'
+  tags: ['always']
+
+- name: Include ubuntu variables
+  include_vars: ubuntu.yml
+  when: ansible_distribution == 'Ubuntu'
+  tags: ['always']
+
+- include: install.yml
+  tags: ['php7-fpm-install']
+
+- include: ioncube.yml
+  when: php7_fpm_install_ioncube == true
+  tags: ['php7-fpm-ioncube']
+
+- include: configure.yml
+  tags: ['php7-fpm-configure']
+
+- include: modules.yml
+  tags: ['php7-fpm-modules']
+
+- include: pools.yml
+  tags: ['php7-fpm-pools']
+
+- name: Start php7-fpm
+  service:
+    name: 'php{{ php7_fpm_version }}-fpm'
+    state: started
+    enabled: yes
+  changed_when: false # required for idempotence

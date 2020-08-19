@@ -1,0 +1,64 @@
+---
+- name: Create filebeat configuration files
+  template:
+    dest: "{{ ELK_ROOT_LOCATION }}/configs/filebeat.yml"
+    src: "configs/filebeat.yml.j2"
+    mode: 0644
+    owner: root
+
+- name: Create elk configuration files
+  template:
+    dest: "{{ ELK_ROOT_LOCATION }}/configs/{{ item }}.yml"
+    src: "configs/{{ item }}.yml.j2"
+    mode: 0644
+    owner: root
+  with_items: "{{ ELK_SERVICES }}"
+
+
+- name: Create base logstash pipelines configuration files
+  template:
+    src: "{{ item }}"
+    dest: "{{ ELK_ROOT_LOCATION }}/logstash_pipelines/{{ item | basename | regex_replace('.j2','') }}"
+    mode: 0644
+    owner: root
+  #notify: restart logstash
+  with_fileglob:
+    - templates/logstash_pipelines/*.conf.j2
+  when: ("logstash" in ELK_SERVICES)
+
+- name: Create base logstash patterns configuration files
+  template:
+    src: "{{ item }}"
+    dest: "{{ ELK_ROOT_LOCATION }}/logstash_patterns/{{ item | basename | regex_replace('.j2','') }}"
+    mode: 0644
+    owner: root
+  #notify: restart logstash
+  with_fileglob:
+    - templates/logstash_patterns/*.grok.j2
+  when: ("logstash" in ELK_SERVICES)
+
+- name: Create logstash pipelines configuration files from inventory
+  template:
+    src: "{{ item }}"
+    dest: "{{ ELK_ROOT_LOCATION }}/logstash_pipelines/{{ item | basename | regex_replace('.j2','') }}"
+    mode: 0644
+    owner: root
+  #notify: restart logstash
+  when: ELK_LOGSTASH_PIPELINES_DIR | length > 0
+  with_fileglob:
+    - "{{ ELK_LOGSTASH_PIPELINES_DIR }}/*.conf.j2"
+    - "{{ ELK_LOGSTASH_PIPELINES_DIR }}/*.conf"
+  when: ("logstash" in ELK_SERVICES)
+
+- name: Create logstash patterns configuration files from inventory
+  template:
+    src: "{{ item }}"
+    dest: "{{ ELK_ROOT_LOCATION }}/logstash_patterns/{{ item | basename | regex_replace('.j2','') }}"
+    mode: 0644
+    owner: root
+  #notify: restart logstash
+  when: ELK_LOGSTASH_PATTERNS_DIR | length > 0
+  with_fileglob:
+    - "{{ ELK_LOGSTASH_PATTERNS_DIR }}/*.grok.j2"
+    - "{{ ELK_LOGSTASH_PATTERNS_DIR }}/*.grok"
+  when: ("logstash" in ELK_SERVICES)

@@ -1,0 +1,8 @@
+user = {{ postfix_dovecot_mysql_user }}
+password = {{ postfix_dovecot_mysql_password }}
+hosts = {{ postfix_dovecot_mysql_host }}
+dbname = {{ postfix_dovecot_mysql_db_name }}
+table = alias
+select_field = goto
+where_field = address
+additional_conditions = and active = '1'

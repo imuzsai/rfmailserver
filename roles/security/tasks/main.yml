@@ -1,0 +1,15 @@
+# main task file for security roles
+---
+- name: Installing message
+  debug:
+    msg: "Installing and config security tools"
+
+#----------------Install and configure tools-----------------
+- include_tasks: install_shorewall.yml
+- include_tasks: install_fail2ban.yml
+#- include_tasks: install_ipsetblacklist.yml
+#- include_tasks: install_logwatch.yml
+#- include_tasks: install_rkhunter.yml
+#- include_tasks: install_ssh_rclocal.yml
+
+

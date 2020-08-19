@@ -1,0 +1,111 @@
+#{{ ansible_managed }}
+
+[ssh]
+enabled  = true
+port     = ssh
+filter   = sshd
+logpath  = /var/log/auth.log
+maxretry = 10
+
+[ssh-ddos]
+enabled  = true
+port     = ssh
+filter   = sshd-ddos
+logpath  = /var/log/auth.log
+maxretry = 5
+
+[sshd-invaliduser]
+enabled = true
+maxretry = 5
+port    = ssh
+logpath = /var/log/auth.log
+bantime  = 9000000
+
+[shorewall-port-scan]
+enabled = true
+port = all
+filter = shorewall-port-scan
+banaction = shorewall
+logpath = /var/log/kern.log
+maxretry = 15
+
+[sasl]
+enabled  = true
+port     = smtp
+filter   = postfix-sasl
+logpath  = /var/log/mail.log
+maxretry = 5
+
+[dovecot]
+enabled  = true  
+filter   = dovecot  
+action   = shorewall
+logpath  = /var/log/mail.log  
+maxretry = 10  
+findtime = 1200  
+bantime  = -10
+
+[roundcube-logins]
+enabled = true
+filter = roundcube
+logpath = /var/log/syslog
+maxretry = 5
+
+[postfix]
+enabled  = true
+port     = smtp,submission,smtps,smtpd
+filter   = postfix
+logpath  = /var/log/mail.log
+maxretry = 5
+
+# HTTP servers
+
+[nginx-http-auth]
+enabled  = true
+filter   = nginx-http-auth
+port     = http,https
+logpath  = /var/log/nginx/error.log
+maxretry = 5
+
+[nginx-noscript]
+enabled  = true
+port     = http,https
+filter   = nginx-noscript
+logpath  = /var/log/nginx/access.log
+maxretry = 6
+
+[nginx-badbots]
+enabled  = true
+port     = http,https
+filter   = nginx-badbots
+logpath  = /var/log/nginx/access.log
+maxretry = 5
+
+[nginx-nohome]
+enabled  = true
+port     = http,https
+filter   = nginx-nohome
+logpath  = /var/log/nginx/access.log
+maxretry = 4
+
+[nginx-noproxy]
+enabled  = true
+port     = http,https
+filter   = nginx-noproxy
+logpath  = /var/log/nginx/access.log
+maxretry = 4
+
+
+# Jail for more extended banning of persistent abusers
+# !!! WARNING !!!
+#   Make sure that your loglevel specified in fail2ban.conf/.local
+#   is not at DEBUG level -- which might then cause fail2ban to fall into
+#   an infinite loop constantly feeding itself with non-informative lines
+[recidive]
+
+enabled  = true
+filter   = recidive
+logpath  = /var/log/fail2ban.log
+#action   = iptables-allports[name=recidive]
+#           sendmail-whois-lines[name=recidive, logpath=/var/log/fail2ban.log]
+action  = shorewall

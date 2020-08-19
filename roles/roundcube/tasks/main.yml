@@ -1,0 +1,116 @@
+---
+
+#- name: ensure roundcube user is present
+#  user:
+#    name: "{{ roundcube_user }}"
+#    home: "{{ roundcube_user_home }}"
+#    shell: "{{ roundcube_user_shell }}"
+
+#- name: create roundcube folder
+#  file:
+#    path: /var/www/roundcube
+#    state: directory
+#    mode: '0755'
+
+- name: ensure database user is present
+  mysql_user:
+    name: "{{ roundcube_mysql_user }}"
+    password: "{{ roundcube_mysql_password }}"
+    priv: "{{ roundcube_mysql_db }}.*:ALL,GRANT"
+    state: present
+    login_user: root
+    #login_password: "{{ roundcube_root_mysql_password }}"
+
+- name: ensure database is present
+  mysql_db:
+    name: "{{ roundcube_mysql_db }}"
+    state: present
+    encoding: "utf8"
+    collation: "utf8_general_ci"
+    login_user: root
+    #login_password: "{{ roundcube_root_mysql_password }}"
+  notify: Import database
+
+- name: install Roundcube dependencies
+  apt:
+    pkg: "{{ roundcube_dependencies }}"
+    state: present
+    install_recommends: False
+
+- name: get roundcube release
+  get_url:
+    url: "https://github.com/roundcube/roundcubemail/releases/download/{{ roundcube_version }}/roundcubemail-{{ roundcube_version }}-complete.tar.gz"
+    dest: "{{ roundcube_user_home }}"
+  when: not ansible_check_mode
+  register: download
+
+- name: unarchive roundcube
+  unarchive:
+    src: "{{ roundcube_user_home }}/roundcubemail-{{ roundcube_version }}-complete.tar.gz"
+    dest: "{{ roundcube_user_home }}"
+    copy: no
+  when: download.changed
+
+- name: link to current release
+  file:
+    src: "{{ roundcube_user_home }}/roundcubemail-{{ roundcube_version }}/"
+    dest: "{{ roundcube_path }}"
+    state: link
+  register: link
+
+- name: change owner+group to roundcube user
+  file:
+    path: "{{ roundcube_path }}"
+    state: directory
+    owner: "{{ roundcube_user }}"
+    group: "{{ roundcube_user }}"
+    recurse: yes
+
+- name: ensure roundcube and plugin configs are latest
+  template:
+    src: "{{ item }}.j2"
+    dest: "{{ roundcube_path }}/{{ item }}"
+    owner: "{{ roundcube_user }}"
+    group: "{{ roundcube_user }}"
+    mode: 0640
+  with_items:
+    - config/config.inc.php
+    - "{{ roundcube_configs_extra|d() }}"
+  tags:
+    - sieve
+    - skin
+
+#- name: run roundcube upgrade script
+#  command: "{{ roundcube_path }}/bin/update.sh"
+#  when: link.changed
+
+- name: create Roundcube cleandb cronjob
+  cron:
+    name: "Roundcube cleandb cronjob"
+    minute: 10
+    hour: 6
+    user: "{{ roundcube_user }}"
+    job: "{{ roundcube_path }}/bin/cleandb.sh >/dev/null"
+    cron_file: roundcube
+
+- name: create Roundcube garbage collector cronjob
+  cron:
+    name: "Roundcube garbage collector cronjob"
+    minute: 30
+    user: "{{ roundcube_user }}"
+    job: "{{ roundcube_path }}/bin/gc.sh >/dev/null"
+    cron_file: roundcube
+
+- import_tasks: skin.yml
+  tags:
+    - skin
+
+- import_tasks: carddav.yml
+  when: "'carddav' in roundcube_plugins"
+  tags:
+    - carddav
+
+- import_tasks: getmail.yml
+  when: "'getmail' in roundcube_plugins"
+  tags:
+    - getmail

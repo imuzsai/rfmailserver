@@ -1,0 +1,39 @@
+---
+
+- name: Set fact for php7_fpm_packages
+  set_fact:
+    php7_fpm_packages: '{{ php7_fpm_default_packages + php7_fpm_group_packages + php7_fpm_host_packages }}'
+
+- name: Remove old pins
+  file:
+    path: /etc/apt/preferences.d/php
+    state: absent
+
+- name: Pin php7 to {{ php7_fpm_pin_version }}
+  copy:
+    dest: /etc/apt/preferences.d/php7
+    content: |
+      Package: {{ php7_fpm_pin_version }}
+      Pin: release a=oldstable
+      Pin-Priority: 700
+
+      Package: *
+      Pin: release a=stable
+      Pin-Priority: 600
+    owner: root
+    group: root
+    mode: '0644'
+  when: php7_fpm_pin_version is defined
+
+- name: Set repository on ubuntu 14
+  apt_repository:
+    repo: ppa:ondrej/php
+  when: ansible_distribution == 'Ubuntu' and (ansible_distribution_version|int >= 14)
+
+- name: Install php7 packages
+  notify: restart php{{ php7_fpm_version }}-fpm
+  apt:
+    name: "{{ php7_fpm_packages }}"
+    state: present
+  when: php7_fpm_packages|length
+

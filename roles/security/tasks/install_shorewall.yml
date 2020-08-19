@@ -1,0 +1,57 @@
+# tasks file for shorewall
+---
+- name: install shorewall
+  apt:
+    name: "shorewall"
+    state: "{{ apt_install_state | default('latest') }}"
+    update_cache: true
+    cache_valid_time: "{{ apt_update_cache_valid_time | default(3600) }}"
+  tags:
+    - configuration
+    - shorewall
+    - shorewall-install
+
+
+#copy configurations
+#- name: copy shorewall.conf
+#  copy:
+#    src: etc/shorewall/shorewall.conf
+#    dest: /etc/shorewall/
+#    owner: root
+#    group: root
+#    mode: '0644'
+#    backup: yes
+#  tags:
+#    - copy main configuration
+
+- name: copy shorewall configs
+  copy:
+    src: etc/shorewall/
+    dest: /etc/shorewall/
+    owner: root
+    group: root
+    mode: '0644'
+    backup: yes
+  tags:
+    - copy other configs
+  notify: restart shorewall
+
+
+- name: start and enable shorewall service
+  service:
+    name: shorewall
+    state: "{{ service_default_state | default('started') }}"
+    enabled: "{{ service_default_enabled | default(true) | bool }}"
+  tags:
+    - configuration
+    - shorewall
+    - shorewall-start-enable-service
+
+
+#change line in /etc/default/shorewall
+#startup=0 -> startup=1
+- name: Replace startup=0 with startup=1 in default file
+  lineinfile:
+    path: /etc/default/shorewall
+    regexp: '^startup=0'
+    line: startup=1

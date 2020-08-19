@@ -1,0 +1,174 @@
+#{{ ansible_managed }}
+
+#-----------------------#
+[client]
+port = 3306
+socket = {{ mariadb.socket }}
+default-character-set = utf8
+
+#-----------------------#
+[mysqld_safe]
+socket = {{ mariadb.socket }}
+nice = 0
+open_files_limit = {{ mariadb.open_files_limit }}
+
+#-----------------------#
+[mysql]
+prompt = "{mysql} [{{ ansible_hostname }}] (\d) > "
+
+#-----------------------#
+[server]
+#--- base ---#
+report-host = {{ ansible_hostname }}
+server-id = {{ mariadb.server_id }}
+open_files_limit = {{ mariadb.open_files_limit }}
+
+user = {{ mariadb.user }}
+character-set-server = utf8
+pid-file	= /var/run/mysqld/mysqld.pid
+socket		= {{ mariadb.socket }}
+basedir		= {{ mariadb.basedir }}
+datadir		= {{ mariadb.datadir }}
+lc-messages-dir	= /usr/share/mysql
+skip-external-locking
+#skip-name-resolve
+event_scheduler = on
+master_info_repository = TABLE
+relay_log_info_repository = TABLE
+gtid_strict_mode = 1
+performance_schema = ON
+read_only = 0 #after set maxscale it can be 1
+
+#--- ssl params ---#
+#
+# * Security Features
+# 
+# Read the manual, too, if you want chroot!
+# chroot = /var/lib/mysql/
+#
+# For generating SSL certificates you can use for example the GUI tool "tinyca".
+#
+# ssl-ca=/etc/mysql/cacert.pem
+# ssl-cert=/etc/mysql/server-cert.pem
+# ssl-key=/etc/mysql/server-key.pem
+#
+# Accept only connections using the latest and most secure TLS protocol version.
+# ..when MariaDB is compiled with OpenSSL:
+# ssl-cipher=TLSv1.2
+# ..when MariaDB is compiled with YaSSL (default in Debian):
+# ssl=on
+
+#--- engine ---#
+default_storage_engine = InnoDB
+
+#--- temp ---#
+tmpdir = /dev/shm
+slave_load_tmpdir = /tmp
+tmp_table_size = 16M
+max_heap_table_size = 16M
+
+#--- innodb ---#
+innodb_file_format = Barracuda
+innodb_buffer_pool_size = {{ mariadb.innodb_buffer_pool_size }}
+innodb_buffer_pool_instances = {{ mariadb.innodb_buffer_pool_instances }}
+
+innodb_open_files = {{ mariadb.open_files_limit }}
+innodb_log_file_size = {{ mariadb.innodb_log_file_size }}
+innodb_log_buffer_size = {{ mariadb.innodb_log_buffer_size }}
+innodb_flush_method = O_DIRECT
+innodb_log_group_home_dir = /var/lib/mysql
+
+innodb_flush_log_at_trx_commit = 2
+innodb_thread_concurrency = {{ mariadb.innodb_thread_concurrency }}
+
+innodb_max_dirty_pages_pct = {{ mariadb.innodb_max_dirty_pages_pct }}
+innodb_file_per_table = 1
+innodb_io_capacity = {{ mariadb.innodb_io_capacity }}
+innodb_io_capacity_max = {{ mariadb.innodb_io_capacity_max }}
+innodb_commit_concurrency = 4
+innodb_data_file_path = ibdata1:10M:autoextend
+innodb_log_files_in_group = 2
+innodb_lock_wait_timeout = 20
+innodb_doublewrite = 1
+innodb_write_io_threads = {{ mariadb.innodb_write_io_threads }}
+innodb_read_io_threads = {{ mariadb.innodb_read_io_threads }}
+innodb_sync_array_size = 1
+
+#--- sql ---#
+sort_buffer_size = {{ mariadb.sort_buffer_size }}
+key_buffer_size = {{ mariadb.key_buffer_size }}
+sql_mode = NO_ENGINE_SUBSTITUTION
+read_buffer_size = {{ mariadb.read_buffer_size }}
+thread_cache_size = {{ mariadb.thread_cache_size }}
+join_buffer_size = {{ mariadb.join_buffer_size }}
+read_rnd_buffer_size = {{ mariadb.read_rnd_buffer_size }}
+explicit_defaults_for_timestamp = 1
+table_open_cache = {{ mariadb.table_open_cache }}
+table_open_cache_instances = {{ mariadb.table_open_cache_instances }}
+table_definition_cache = -1
+query_cache_type = {{ mariadb.query_cache_type }}
+query_cache_limit = {{ mariadb.query_cache_limit }}
+query_cache_min_res_unit = {{ mariadb.query_cache_min_res_unit }}
+query_cache_size = {{ mariadb.query_cache_size }}
+
+#--- net ---#
+bind-address = 0.0.0.0
+port = 3306
+socket = {{ mariadb.socket }}
+connect_timeout = 30
+interactive_timeout = 100
+wait_timeout = 100
+max_connections = 50
+max_user_connections = 50
+max_allowed_packet = 64M 
+max_connect_errors = 99999999
+
+#--- slave ---#
+slave_net_timeout = 120 
+slave_compressed_protocol = 1 #
+skip-slave-start = 0
+auto_increment_increment = 2
+auto_increment_offset= {{ mariadb.server_id }}
+
+#--- myisam ---#
+concurrent_insert = 2
+myisam_recover_options = BACKUP,FORCE
+myisam_sort_buffer_size = 16M
+
+#--- slowlog ---#
+log_output=FILE
+slow_query_log
+slow_query_log_file= /var/log/mysql/mysql-slow.log
+long_query_time=2.0
+log_queries_not_using_indexes=OFF
+log_slow_rate_limit = 100
+log_warnings = 1
+log_slow_verbosity = query_plan,innodb
+
+#--- binlog ---#
+log_bin = /var/lib/mysql/binlog/mysql-bin
+log_bin_index = /var/lib/mysql/binlog/mysql-bin.index
+sync_binlog = 0 #
+binlog_format = ROW #
+#binlog-do-db = alma
+#binlog-ignore-db = bi
+binlog_rows_query_log_events = ON
+binlog_row_image = MINIMAL
+#replicate-ignore-db = repa
+max_binlog_size = 1G
+expire_logs_days = 2
+log_slave_updates = 1
+
+#--- transaction ---#
+transaction-isolation = READ-COMMITTED #https:#mariadb.com/kb/en/set-transaction/#read-committed
+
+#--- relaylog ---#
+relay-log = /var/lib/mysql/relaylog/relay-bin
+relay-log-info-file = /var/lib/mysql/relaylog/relay-bin.info
+relay-log-index = /var/lib/mysql/relay-bin.index
+relay-log-space-limit = 4G
+
+#--- errorlog ---#
+log-error = /var/log/mysql/error.log
+
+

@@ -1,0 +1,6 @@
+---
+- name: Be sure if rsyslog installed
+  include: install.yml
+
+- name: Set rsyslog configs for local elk stack
+  include: config.yml

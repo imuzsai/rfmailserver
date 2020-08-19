@@ -1,0 +1,20 @@
+# {{ ansible_managed }}
+
+output {
+    if "beats_input" in [tags] {
+	elasticsearch {
+	hosts => ["localhost:9200"]
+	index => "%{[@metadata][beat]}-%{[@metadata][version]}" 
+	user => {{ ELK_ELASTISEARCH_USER }}
+	password => {{ ELK_ELASTISEARCH_PASSWORD }}
+	}
+    } else {
+    	elasticsearch {
+        hosts => ["localhost:9200"]
+        index => "rsyslog-%{+YYYY.MM.dd}"
+	user => {{ ELK_ELASTISEARCH_USER }}
+	password => {{ ELK_ELASTISEARCH_PASSWORD }}
+	}
+    }
+}
+

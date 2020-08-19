@@ -1,0 +1,13 @@
+---
+- hosts: server
+  user: xxxxx
+  become: true
+  roles:
+    #- role: docker
+    #  vars:
+    #  docker_users: [ istvan ]
+    #- role: nginx
+    #- role: elk
+    #- role: security
+    #- role: rsyslog
+

@@ -1,0 +1,12 @@
+---
+- name: Configure rsyslog for ELK stack
+  template:
+    src: "{{ item }}.conf.j2"
+    dest: "/etc/rsyslog.d/{{ item }}.conf"
+  with_items:
+    - 01-json-template
+    - 02-nginxlogs
+    - 05-phpfpmlogs
+    - 50-default
+  notify:
+    - restart rsyslog

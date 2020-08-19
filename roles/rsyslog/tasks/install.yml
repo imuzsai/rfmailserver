@@ -1,0 +1,9 @@
+---
+- name: Ensure dependencies are installed.
+  apt:
+    name:
+      - rsyslog
+    state: present
+
+- name: Set rsyslog configs for local elk stack
+  include: config.yml

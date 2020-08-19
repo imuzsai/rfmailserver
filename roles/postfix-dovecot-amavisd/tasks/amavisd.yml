@@ -1,0 +1,36 @@
+---
+- name: install Amavisd
+  apt:
+    name: "{{ item }}"
+  with_items:
+  - amavisd-new
+  notify: restart postfix
+
+- name: ensure Amavisd is started and runs at startup
+  service:
+    name: amavis
+    state: started
+    enabled: yes
+
+- name: configure amavis
+  template:
+    src: etc/amavis/conf.d/{{ item }}.j2
+    dest: /etc/amavis/conf.d/{{ item }}
+    owner: root
+    group: root
+    mode: 0660
+  with_items:
+  - 01-debian
+  - 05-domain_id
+  - 05-node_id
+  - 15-av_scanners
+  - 15-content_filter_mode
+  - 50-user 
+
+- name: configure amavis (localdomains)
+  template:
+    src: etc/amavis/localdomains.j2
+    dest: /etc/amavis/localdomains
+    owner: root
+    group: root
+    mode: 0660

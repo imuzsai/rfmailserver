@@ -1,0 +1,28 @@
+---
+# Convert vars into objects
+ELK_REGISTRIES:
+  elasticsearch: "{{ ELK_ELASTICSEARCH_REGISTRY }}"
+  kibana: "{{ ELK_KIBANA_REGISTRY }}"
+  logstash: "{{ ELK_LOGSTASH_REGISTRY }}"
+
+ELK_PLUGINS:
+  elasticsearch: "{{ ELK_ELASTICSEARCH_PLUGINS }}"
+  kibana: "{{ ELK_KIBANA_PLUGINS }}"
+  logstash: "{{ ELK_LOGSTASH_PLUGINS }}"
+
+ELK_SERVICES_NAMES:
+  elasticsearch: "{{ ELK_ELASTICSEARCH_SERVICE_NAME }}"
+  kibana: "{{ ELK_KIBANA_SERVICE_NAME }}"
+  logstash: "{{ ELK_LOGSTASH_SERVICE_NAME }}"
+
+# Services to install and enable:
+ELK_SERVICES:
+  - elasticsearch
+  - kibana
+  - logstash
+  - filebeat
+
+ELK_LOGSTASH_PORTS:
+  - "{{ ELK_LOGSTASH_BEATS_LISTEN_PORT }}:{{ ELK_LOGSTASH_BEATS_LISTEN_PORT }}"
+
+ELK_LOGSTASH_DOCKER_PATTERNS_DIR: /usr/share/logstash/patterns

@@ -1,0 +1,35 @@
+---
+#- name: set sshd config
+#  template:
+#    src: sshd_config.j2
+#    dest: /etc/ssh/sshd_config
+#    owner: root
+#    group: root
+#    mode: 0644
+#  notify: restart sshd
+
+- name: install mc
+  apt:
+   name: mc
+   state: latest
+   update_cache: true
+
+- name: install ntp
+  apt:
+   name: ntp
+   state: latest
+
+- name: install unzip
+  apt:
+   name: unzip
+   state: latest
+
+- name: install screen
+  apt:
+   name: screen
+   state: latest
+
+- name: install git
+  apt:
+   name: git
+   state: latest

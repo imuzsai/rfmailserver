@@ -1,0 +1,70 @@
+#{{ ansible_managed }}
+
+add_header X-Frame-Options SAMEORIGIN;
+add_header X-Content-Type-Options nosniff;
+add_header X-XSS-Protection "1; mode=block";
+
+server {
+	listen 80;
+	root /var/www;
+	server_name info.phaah6EG.rackforest.ninja;
+	listen 443 ssl http2;
+	ssl_certificate /etc/letsencrypt/live/info.phaah6eg.rackforest.ninja/fullchain.pem;
+	ssl_certificate_key /etc/letsencrypt/live/info.phaah6eg.rackforest.ninja/privkey.pem;
+
+	# Redirect non-https traffic to https
+	if ($scheme != "https") {
+	return 301 https://$host$request_uri;
+	}
+
+	#access_log /var/log/nginx/info-access.log special buffer=32k;
+	#error_log  /var/log/nginx/info-error.log;
+
+	location / {
+	#basic auth
+        satisfy any;
+        allow 10.10.10.1;
+        deny all;
+        auth_basic "page-auth";
+        auth_basic_user_file /etc/nginx/.htpasswd;
+	index  phpinfo.php;
+	try_files $uri $uri/ $uri.html =404;
+	}
+
+        # pass the PHP scripts to FastCGI server socket
+        #
+        location ~ \.php$ {
+	#basic auth
+        satisfy any;
+        allow 10.10.10.1;
+        deny all;
+        auth_basic "page-auth";
+        auth_basic_user_file /etc/nginx/.htpasswd;
+        fastcgi_split_path_info ^(.+?\.php)(/.*)$;
+        try_files      $uri =404;
+        #root   /var/www;
+        #fastcgi_pass   127.0.0.1:9000;
+        fastcgi_pass unix:/run/php7.3-fpm-default.socket;
+        fastcgi_index  index.php;
+        fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;
+        include /etc/nginx/fastcgi_params;
+        }
+	
+	
+	# deny access to .htaccess files, if Apache's document root
+	# concurs with nginx's one
+	#
+	location ~ /\.ht {
+		deny  all;
+	}
+	
+	location ~ /\.svn {
+		deny  all;
+	}
+	
+	
+	#location ~ /\.(ht|git) {
+	#                deny all;
+	#}
+
+}	

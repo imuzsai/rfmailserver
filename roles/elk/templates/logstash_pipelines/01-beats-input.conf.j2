@@ -1,0 +1,15 @@
+# {{ ansible_managed }}
+input {
+  beats {
+    port => {{ ELK_LOGSTASH_BEATS_LISTEN_PORT }}
+    tags => ["beats_input"]
+{% if ELK_LOGSTASH_SSL | bool %}
+    ssl => true
+    ssl_certificate_authorities => ["/usr/share/logstash/config/logstash.crt"]
+    ssl_verify_mode => "peer"
+    ssl_certificate => "/usr/share/logstash/config/logstash.crt"
+    ssl_key => "/usr/share/logstash/config/logstash.key"
+{% endif %}
+  }
+}
+

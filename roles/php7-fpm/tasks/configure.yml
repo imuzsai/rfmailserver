@@ -1,0 +1,40 @@
+---
+
+- name: Ensure configuration directories exist.
+  file:
+    path: "{{ item }}"
+    state: directory
+    follow: true
+  with_items: '{{php7_fpm_config_dirs}}'
+
+- name: Set fpm php.ini
+  template:
+    src: php_fpm.ini
+    dest: "/etc/php/{{ php7_fpm_version }}/fpm/php.ini"
+    owner: root
+    group: root
+    mode: 0644
+  notify: restart php{{ php7_fpm_version }}-fpm
+
+- name: Set cli php.ini
+  template:
+    src: php_cli.ini
+    dest: "/etc/php/{{ php7_fpm_version }}/cli/php.ini"
+    owner: root
+    group: root
+    mode: 0644
+  notify: restart php{{ php7_fpm_version }}-fpm
+
+- name: Configure php{{ php7_fpm_version }}-fpm.conf
+  notify: restart php{{ php7_fpm_version }}-fpm
+  template:
+    src: 'php-fpm.conf'
+    dest: '/etc/php/{{ php7_fpm_version }}/fpm/php-fpm.conf'
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Set as default cli version
+  command: update-alternatives --set php /usr/bin/php{{ php7_default_cli_version }}
+  changed_when: false
+  when: php7_default_cli_version is defined

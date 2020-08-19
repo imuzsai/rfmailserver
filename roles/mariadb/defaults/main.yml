@@ -1,0 +1,65 @@
+---
+mariadb_version: 10.2.30
+
+mariadb_service_name: mysql
+mariadb_secure_installation: True
+
+#mariadb_root_password:
+
+mariadb_server_path_utiles: /opt/sqltools/
+
+
+mariadb_databases:
+# delete [] and define databases
+# - mailserver
+# - database2
+
+#mariadb_users:
+# delete [] and define databases
+# user1:
+#    name: "usermail"
+#    password: "ripho3quiebeeSah"
+#    priv: "mailserver.*:ALL"
+#    host: "localhost"
+#    state: present
+# user2:
+#    name: "usuario2"
+#    password: "clave2"
+#    priv: "db.table:priv1,priv2"
+# user3:
+#    name: "usuario3"
+#    password: "clave3"
+#    priv: "bdpruebas.*:ALL"
+
+mariadb:
+  socket: /var/run/mysqld/mysqld.sock
+  open_files_limit: 16384
+  server_id: "{{ 100 | random(seed=inventory_hostname) }}"
+  user: mysql
+  basedir: /usr
+  datadir: /var/lib/mysql
+  innodb_buffer_pool_size: 50M
+  innodb_buffer_pool_instances: 1
+  innodb_open_files: 16384
+  innodb_log_file_size: 20M
+  innodb_log_buffer_size: 1M
+  innodb_thread_concurrency: 2
+  innodb_max_dirty_pages_pct: 90
+  innodb_io_capacity: 200
+  innodb_io_capacity_max: 1000
+  innodb_write_io_threads: 2
+  innodb_read_io_threads: 2
+  sort_buffer_size: 512K
+  key_buffer_size: 128K
+  read_buffer_size: 128K
+  thread_cache_size: 600
+  join_buffer_size: 512K
+  read_rnd_buffer_size: 512K
+  table_open_cache: 2000
+  table_open_cache_instances: 16
+  query_cache_type: 0
+  query_cache_limit: 0
+  query_cache_min_res_unit: 0
+  query_cache_size: 0
+  
+aptget_update_cache_valid_time: 3600

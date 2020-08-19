@@ -1,0 +1,11 @@
+$ModLoad imfile
+
+
+# php7-fpm.log
+$InputFileName /var/log/php7-fpm.log
+$InputFileTag php7-fpm:
+$InputFileStateFile stat-php7
+$InputFileSeverity info
+$InputFileFacility local7
+$InputFilePollInterval 5
+$InputRunFileMonitor

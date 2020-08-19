@@ -1,0 +1,9 @@
+---
+- name: Merge the two lists
+  set_fact:
+    PORT_TO_ADD:
+      - "{{ to_listen.port }}:{{ to_listen.port }}/{{ to_listen.protocol }}"
+
+- name: Merge the two lists
+  set_fact:
+    ELK_LOGSTASH_PORTS: "{{ ELK_LOGSTASH_PORTS + PORT_TO_ADD }}"

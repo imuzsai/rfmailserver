@@ -1,0 +1,3 @@
+---
+nginx_env:
+  RUNLEVEL: 1

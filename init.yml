@@ -1,0 +1,20 @@
+---
+- hosts: all
+  user: root
+  roles:
+    - role: users
+      vars:
+      users:
+       - name: istvan
+         username: xxxxx
+         groups: ['sudo']
+         password: '$6$9dq1kLcH0xYiXa$fF7JKVlOsY1pxsMjabKCdpfcikHrtjycq5zPFX/s8ctx4HbFaUrpGcXiIqRwzrX2d.OWU4M8/pw17WrnM51nn/'
+         ssh_key:
+           - "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA5mlQti7frEtTNF5xTsCot13fqDC29Dk0XEXtfldAKAGKRIcYob5BI2N9+ATmDDqT/dioTbhf3eVVRcWlDrcfTEAx6xwUzBxlhc3wh1h5EWMHCLkmu40ivKoWOKV6ie4XWEcWh5tKq8PrSv1E8vJxXPJhPC5fjweut1xsgLtcs8tUPMHWR5Yc6rbTa8fsHxavLsJgAAnS7eGnFnR0pbp1r+a69YPG3ygl1aFQgMT7DfXXYLHyhJvxmJDWXsqA/4NHcmDy1woTmcH3bVVNZ5nMNck0G6np/RHxE8XZS3E7squn5EXen7VK/BZD68BpuChYoZ/jv+IPQFl9VfZSMSVpjw== istvan@istvan-laptop"
+    - role: common
+
+  tasks:
+    - name: Set timezone to Europe/Budapest
+      timezone:
+        name: Europe/Budapest
+

@@ -1,0 +1,49 @@
+#{{ansible_managed}}
+#
+# Shorewall - Sample Rules File for one-interface configuration.
+# Copyright (C) 2006-2014 by the Shorewall Team
+#
+# This library is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation; either
+# version 2.1 of the License, or (at your option) any later version.
+#
+# See the file README.txt for further details.
+#------------------------------------------------------------------------------------------------------------
+# For information on entries in this file, type "man shorewall-rules"
+######################################################################################################################################################################################################
+#ACTION		SOURCE		DEST		PROTO	DEST	SOURCE		ORIGINALRATEUSER/	MARK	CONNLIMIT	TIME		HEADERS		SWITCH		HELPER
+#							PORT	PORT(S)		DEST	LIMITGROUP
+?SECTION ALL
+?SECTION ESTABLISHED
+?SECTION RELATED
+?SECTION INVALID
+?SECTION UNTRACKED
+?SECTION NEW
+
+# Drop packets in the INVALID state
+
+Invalid(DROP)	net		$FW		tcp
+
+# Drop Ping from the "bad" net zone.. and prevent your log from being flooded..
+
+Ping(DROP)	net		$FW
+
+# Permit all ICMP traffic FROM the firewall TO the net zone
+ACCEPT		$FW		net		icmp
+#allow ssh
+ACCEPT	net		$FW		tcp	22	-	-	
+#allow https
+ACCEPT	net		$FW		tcp	443	-	-	
+#allow http
+ACCEPT	net		$FW		tcp	80	-	-	
+#allow smtp
+ACCEPT	net		$FW		tcp	25	-	-	
+#allow imaps
+ACCEPT	net		$FW		tcp	993	-	-	
+#allow pop3s
+ACCEPT	net		$FW		tcp	995	-	-	
+#allow smtps
+ACCEPT	net		$FW		tcp	587	-	-	
+#allow kibana/nginx reverse 
+ACCEPT	net		$FW		tcp	5888	-	-	

@@ -1,0 +1,41 @@
+---
+- name: install ipset
+  apt:
+    name: "ipset"
+    state: "{{ apt_install_state | default('latest') }}"
+    update_cache: true
+    cache_valid_time: "{{ apt_update_cache_valid_time | default(3600) }}"
+  tags:
+    - ipset-install
+    - ipset
+
+- name: Create a directory /etc/ipset-blacklist
+  file:
+    path: /etc/ipset-blacklist
+    state: directory
+    mode: '0755'
+
+- name: copy ipset-blacklist.conf to folder
+  copy:
+    src: etc/ipset-blacklist/ipset-blacklist.conf
+    dest: /etc/ipset-blacklist/ipset-blacklist.conf
+    owner: root
+    group: root
+    mode: 0644
+
+- name: download ipset-blacklist updater script
+  get_url:
+    url: https://raw.githubusercontent.com/trick77/ipset-blacklist/master/update-blacklist.sh
+    dest: "/usr/local/sbin/update-blacklist.sh"
+    owner: root
+    group: root
+    mode: 0740
+
+- name: create cronjob file
+  copy:
+    src: etc/cron.d/update-blacklist
+    dest: /etc/cron.d/update-blacklist
+    owner: root
+    group: root
+    mode: 0644
+

@@ -1,0 +1,48 @@
+---
+- name: set sshd config
+  template:
+    src: sshd_config.j2
+    dest: /etc/ssh/sshd_config
+    owner: root
+    group: root
+    mode: 0644
+  notify: restart sshd
+
+#copy rc.local
+- name: copy rc.local
+  copy:
+    src: etc/rc.local
+    dest: /etc/rc.local
+    owner: root
+    group: root
+    mode: '0755'
+    backup: yes
+  tags:
+    - copy rc.local
+
+#copy sysctl.conf
+- name: copy sysctl.conf
+  copy:
+    src: etc/sysctl.conf
+    dest: /etc/sysctl.conf
+    owner: root
+    group: root
+    mode: '0644'
+    backup: yes
+  tags:
+    - copy sysctl.conf
+  notify: reload sysctl.conf
+
+
+##put records to rc.local
+## Enable blacklists
+#ipset restore < /etc/ipset-blacklist/ip-blacklist.restore
+#iptables -I INPUT 1 -m set --match-set blacklist src -j DROP
+#- name: add lines to rc.local if not exist
+#  blockinfile:
+#    path: /etc/rc.local
+#    insertbefore: "^exit 0"
+#    block: |
+#      #enable blacklists
+#      ipset restore < /etc/ipset-blacklist/ip-blacklist.restore
+#      iptables -I INPUT 1 -m set --match-set blacklist src -j DROP

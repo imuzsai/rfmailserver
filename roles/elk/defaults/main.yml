@@ -1,0 +1,49 @@
+---
+# Docker registries and version used to create the services
+ELK_ELASTICSEARCH_REGISTRY: docker.elastic.co/elasticsearch/elasticsearch
+ELK_KIBANA_REGISTRY: docker.elastic.co/kibana/kibana
+ELK_LOGSTASH_REGISTRY: docker.elastic.co/logstash/logstash
+ELK_VERSION: 7.6.2
+
+# Plugins to install
+ELK_ELASTICSEARCH_PLUGINS: []
+ELK_KIBANA_PLUGINS: []
+ELK_LOGSTASH_PLUGINS: []
+
+# The name of the services / containers
+ELK_ELASTICSEARCH_SERVICE_NAME: elasticsearch
+ELK_KIBANA_SERVICE_NAME: kibana
+ELK_LOGSTASH_SERVICE_NAME: logstash
+
+# If the service have to be started
+ELK_SERVICES_ENABLED: false
+
+# The docker network in which to add the container
+ELK_DOCKER_NETWORK: elk
+
+# Root directory of elk stack files
+ELK_ROOT_LOCATION: /opt/elk
+#
+ELK_DATA_LOCATION: /var/data
+
+# Elasticsearch Password
+#ELK_ELASTISEARCH_USER:
+#ELK_ELASTISEARCH_PASSWORD:
+
+
+# ================= LOGSTASH CONFIG =================
+
+ELK_LOGSTASH_BEATS_LISTEN_PORT: 5000
+
+ELK_LOGSTASH_INPUTS: []
+ # - type: rsyslog
+#    port: 10514
+#    protocol: udp
+#    codec: json
+
+ELK_LOGSTASH_SSL: false
+#ELK_LOGSTASH_SSL_CERTIFICATE_FILE: "/usr/share/logstash/config/logstash.crt"
+#ELK_LOGSTASH_SSL_KEY_FILE: "/usr/share/logstash/config/logstash.key"
+
+ELK_LOGSTASH_PIPELINES_DIR: ""
+ELK_LOGSTASH_PATTERNS_DIR: ""

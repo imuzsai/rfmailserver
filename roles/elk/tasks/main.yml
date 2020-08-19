@@ -1,0 +1,47 @@
+---
+- name: Create ELK users
+  user:
+    name: "{{ item }}"
+    comment: elk user
+    shell: /bin/false
+    state: present
+    system: yes
+  with_items: "{{ ELK_SERVICES }}"
+
+- name: Create ELK files directories
+  file:
+    path: "{{ item }}"
+    mode: 0755
+    owner: root
+    #recurse: true
+    state: directory
+  with_items:
+    - "{{ ELK_ROOT_LOCATION }}"
+    - "{{ ELK_ROOT_LOCATION }}/configs"
+    - "{{ ELK_ROOT_LOCATION }}/logs"
+    - "{{ ELK_ROOT_LOCATION }}/logstash_patterns"
+    - "{{ ELK_ROOT_LOCATION }}/logstash_pipelines"
+    - "{{ ELK_ROOT_LOCATION }}/ssl"
+
+- name: Create ELK data folders
+  file:
+    path: "{{ ELK_DATA_LOCATION}}/{{ item }}"
+    mode: 0755
+    owner: "{{ item }}"
+    #recurse: true
+    state: directory
+  with_items: "{{ ELK_SERVICES }}"
+
+- name: install python3 pip, python3-docker
+  apt:
+    name: python3-pip, python-dev, python3-docker
+
+- name: Install Python Jsondiff
+  pip:
+    name: jsondiff
+
+- name: Install elk configurations.
+  include: config.yml
+
+- name: Create services containers
+  include: services.yml

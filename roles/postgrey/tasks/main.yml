@@ -1,0 +1,40 @@
+---
+# tasks file for postgrey
+- name: package
+  package:
+    name: '{{ postgrey_packages }}'
+    force_apt_get: yes
+  tags:
+    - postgrey
+    - package
+
+- name: options
+  lineinfile:
+    path: '/etc/default/postgrey'
+    regexp: '^POSTGREY_OPTS='
+    line: 'POSTGREY_OPTS="{{ postgrey_opts }}"'
+  notify: postgrey restart
+  tags:
+    - postgrey
+    - options
+
+- name: "local whitelist clients"
+  template:
+    src: 'whitelist_clients.j2'
+    dest: '/etc/postgrey/whitelist_clients.local'
+    owner: root
+    group: root
+    mode: 0644
+  when:
+    - postgrey_whitelist_clients is defined
+  notify: postgrey restart
+
+- name: "default file for postgrey"
+  template:
+    src: 'postgrey.j2'
+    dest: '/etc/default/postgrey'
+    owner: root
+    group: root
+    mode: 0644
+  notify: postgrey restart
+

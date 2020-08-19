@@ -1,0 +1,21 @@
+---
+#check if database exists
+- name: check if DB exists
+  shell: mysql --user=root -e 'SHOW DATABASES;' | grep -c {{ postfix_dovecot_mysql_db_name }}
+  register: dbstatus
+  failed_when: dbstatus.rc == 2
+
+
+- name: copy initial database
+  copy: src=schema.sql dest=/tmp/schema.sql
+  when: dbstatus.stdout == "0"
+
+- name: create database
+  mysql_db:
+    name: "mailserver"
+    state: present
+  when: dbstatus.stdout == "0"
+
+- name: import database
+  mysql_db: name={{ postfix_dovecot_mysql_db_name }} login_user="root" target=/tmp/schema.sql state=import
+  when: dbstatus.stdout == "0"

@@ -1,0 +1,4 @@
+---
+- name: Install the nginx packages for all other distributions
+  package: name="{{ nginx_pkgs }}" state=present
+  environment: "{{ nginx_env }}"

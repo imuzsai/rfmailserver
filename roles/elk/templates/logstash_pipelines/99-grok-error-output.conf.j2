@@ -1,0 +1,12 @@
+# {{ ansible_managed }}
+output {
+  # Something went wrong with the grok parsing, don't discard the messages though
+  if "_grokparsefailure" in [tags] {
+    elasticsearch {
+      hosts => ["localhost:9200"]
+      index => "grokparsefailure"
+      user => {{ ELK_ELASTISEARCH_USER }}
+      password => {{ ELK_ELASTISEARCH_PASSWORD }}
+    }
+  }
+}

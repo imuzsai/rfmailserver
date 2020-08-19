@@ -1,0 +1,17 @@
+---
+- hosts: all
+  user: xxxxx
+  become: true
+  roles:
+    #- role: nginx
+    #- role: sury
+    #- role: php7-fpm
+    #- role: mariadb
+    #- role: security
+##mailserver roles
+    #- role: clamav
+    #- role: spamassassin
+    #- role: postgrey 
+    #- role: postfix-dovecot-amavisd
+    #- role: roundcube
+#  tasks:

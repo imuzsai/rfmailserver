@@ -1,0 +1,49 @@
+---
+- name: Copy the nginx configuration file
+  template:
+    src: nginx.conf.j2
+    dest: "{{ nginx_conf_dir }}/nginx.conf"
+  notify:
+    - restart nginx
+
+- name: Create the configurations for sites
+  template:
+    src: "{{ item }}.site.j2"
+    dest: "{{ nginx_conf_dir }}/sites-available/{{ item }}.conf"
+  with_items: "{{ sites }}"
+  notify:
+    - restart nginx
+
+- name: Create links for sites-enabled
+  file:
+    state: link
+    src: "{{ nginx_conf_dir }}/sites-available/{{ item }}.conf"
+    dest: "{{ nginx_conf_dir }}/sites-enabled/{{ item }}.conf"
+  with_items: "{{ sites }}"
+  notify:
+    - reload nginx
+
+- name: Generate DH Parameters with a different size (2048 bits)
+  openssl_dhparam:
+    path: /etc/nginx/dhparams.pem
+    size: 2048
+
+- name: install passlib pip
+  pip:
+    name: passlib
+    state: present
+
+- name: create/update /etc/nginx/.htpasswd file
+  htpasswd:
+    path: /etc/nginx/.htpasswd
+    name: "{{ nginx_htpasswd_user }}"
+    password: "{{ nginx_htpasswd_password }}"
+    owner: root
+    group: www-data
+    mode: 0640
+
+- name: Copy testfile to www root
+  copy:
+    src: "files/phpinfo.php"
+    dest: "/var/www/phpinfo.php"
+    mode: "0644"
